@@ -37,5 +37,9 @@
     "json",
     "jsonc",
     "yaml"
-  ]
+  ],
+
+  "explorer.fileNesting.patterns": {
+    "index.d.ts": "*.d.ts"
+  }
 }
