@@ -58,32 +58,32 @@ const Guide = [
   },
 ]
 
-const Deployment = [
-  {
-    text: 'Getting Started',
-    link: '/deployment/',
-  },
-  {
-    text: 'Netlify',
-    link: '/deployment/netlify',
-  },
-  {
-    text: 'AWS Amplify',
-    link: '/deployment/aws',
-  },
-  {
-    text: 'Vercel',
-    link: '/deployment/vercel',
-  },
-  {
-    text: 'NGINX',
-    link: '/deployment/nginx',
-  },
-  {
-    text: 'Apache Http Server 2.4+',
-    link: '/deployment/apache',
-  },
-]
+// const Deployment = [
+//   {
+//     text: 'Getting Started',
+//     link: '/deployment/',
+//   },
+//   {
+//     text: 'Netlify',
+//     link: '/deployment/netlify',
+//   },
+//   {
+//     text: 'AWS Amplify',
+//     link: '/deployment/aws',
+//   },
+//   {
+//     text: 'Vercel',
+//     link: '/deployment/vercel',
+//   },
+//   {
+//     text: 'NGINX',
+//     link: '/deployment/nginx',
+//   },
+//   {
+//     text: 'Apache Http Server 2.4+',
+//     link: '/deployment/apache',
+//   },
+// ]
 
 const Frameworks = [
   {
@@ -94,82 +94,82 @@ const Frameworks = [
     text: 'Vue',
     link: '/frameworks/vue',
   },
-  {
-    text: 'React',
-    link: '/frameworks/react',
-  },
-  {
-    text: 'Svelte',
-    link: '/frameworks/svelte',
-  },
-  {
-    text: 'SvelteKit',
-    link: '/frameworks/sveltekit',
-  },
-  {
-    text: 'SolidJS',
-    link: '/frameworks/solidjs',
-  },
-  {
-    text: 'Preact',
-    link: '/frameworks/preact',
-  },
-  {
-    text: 'VitePress',
-    link: '/frameworks/vitepress',
-  },
-  {
-    text: 'îles',
-    link: '/frameworks/iles',
-  },
-  {
-    text: 'Astro (WIP)',
-    link: '/frameworks/astro',
-  },
+  // {
+  //   text: 'React',
+  //   link: '/frameworks/react',
+  // },
+  // {
+  //   text: 'Svelte',
+  //   link: '/frameworks/svelte',
+  // },
+  // {
+  //   text: 'SvelteKit',
+  //   link: '/frameworks/sveltekit',
+  // },
+  // {
+  //   text: 'SolidJS',
+  //   link: '/frameworks/solidjs',
+  // },
+  // {
+  //   text: 'Preact',
+  //   link: '/frameworks/preact',
+  // },
+  // {
+  //   text: 'VitePress',
+  //   link: '/frameworks/vitepress',
+  // },
+  // {
+  //   text: 'îles',
+  //   link: '/frameworks/iles',
+  // },
+  // {
+  //   text: 'Astro (WIP)',
+  //   link: '/frameworks/astro',
+  // },
 ]
 
-const Examples = [
-  {
-    text: 'Getting Started',
-    link: '/examples/',
-  },
-  {
-    text: 'Vue',
-    link: '/examples/vue',
-  },
-  {
-    text: 'React',
-    link: '/examples/react',
-  },
-  {
-    text: 'Svelte',
-    link: '/examples/svelte',
-  },
-  {
-    text: 'SvelteKit',
-    link: '/examples/sveltekit',
-  },
-  {
-    text: 'SolidJS',
-    link: '/examples/solidjs',
-  },
-  {
-    text: 'Preact',
-    link: '/examples/preact',
-  },
-  {
-    text: 'VitePress',
-    link: '/examples/vitepress',
-  },
-  {
-    text: 'îles',
-    link: '/examples/iles',
-  },
-  {
-    text: 'Astro (WIP)',
-    link: '/examples/astro',
-  },
-]
+// const Examples = [
+//   {
+//     text: 'Getting Started',
+//     link: '/examples/',
+//   },
+//   {
+//     text: 'Vue',
+//     link: '/examples/vue',
+//   },
+//   {
+//     text: 'React',
+//     link: '/examples/react',
+//   },
+//   {
+//     text: 'Svelte',
+//     link: '/examples/svelte',
+//   },
+//   {
+//     text: 'SvelteKit',
+//     link: '/examples/sveltekit',
+//   },
+//   {
+//     text: 'SolidJS',
+//     link: '/examples/solidjs',
+//   },
+//   {
+//     text: 'Preact',
+//     link: '/examples/preact',
+//   },
+//   {
+//     text: 'VitePress',
+//     link: '/examples/vitepress',
+//   },
+//   {
+//     text: 'îles',
+//     link: '/examples/iles',
+//   },
+//   {
+//     text: 'Astro (WIP)',
+//     link: '/examples/astro',
+//   },
+// ]
 
 const Workbox = [
   {
@@ -183,6 +183,10 @@ const Workbox = [
   {
     text: 'injectManifest',
     link: '/workbox/inject-manifest',
+  },
+  {
+    text: 'Workbox Build',
+    link: '/workbox/chrome/',
   },
 ]
 
@@ -200,18 +204,18 @@ function prepareSidebar(idx: number) {
       collapsed: true,
       items: Frameworks,
     },
-    {
-      text: 'Examples',
-      collapsible: true,
-      collapsed: true,
-      items: Examples,
-    },
-    {
-      text: 'Deploy',
-      collapsible: true,
-      collapsed: true,
-      items: Deployment,
-    },
+    // {
+    //   text: 'Examples',
+    //   collapsible: true,
+    //   collapsed: true,
+    //   items: Examples,
+    // },
+    // {
+    //   text: 'Deploy',
+    //   collapsible: true,
+    //   collapsed: true,
+    //   items: Deployment,
+    // },
     {
       text: 'Workbox',
       collapsible: true,
@@ -325,9 +329,9 @@ export default defineConfig({
     sidebar: {
       '/guide/': prepareSidebar(0),
       '/frameworks/': prepareSidebar(1),
-      '/examples/': prepareSidebar(2),
-      '/deployment/': prepareSidebar(3),
-      '/workbox/': prepareSidebar(4),
+      // '/examples/': prepareSidebar(2),
+      // '/deployment/': prepareSidebar(3),
+      '/workbox/': prepareSidebar(3),
     },
   },
   vite: {

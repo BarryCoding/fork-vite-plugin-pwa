@@ -6,6 +6,7 @@ export default await antfu(
       '**/build/**',
       '**/dist/**',
       '**/dev-dist/**',
+      '**/docs/workbox/**',
     ],
   },
   {
