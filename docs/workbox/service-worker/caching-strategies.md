@@ -77,12 +77,178 @@ Once again, asynchrony is the name of the game. You'll recall that the `install`
 
 ## Caching strategies
 
+Now that you've got a little familiarity with `Cache` instances and the `fetch` event handler, you're ready to dive into some service worker caching strategies. While the possibilities are practically endless, this guide will stick with the strategies that ship with Workbox, so you can get a sense of what goes on in Workbox's internals.
+
 ### Cache only
+
+TODO: image
+
+Let's start with a simple caching strategy we'll call "Cache Only". It's just that: when the service worker is in control of the page, matching requests will only ever go to the cache. This means that any cached assets will **need to be precached** in order to be available for the pattern to work, and that those assets will **never be updated** in the cache until the service worker is updated.
+
+```js
+// Establish a cache name
+const cacheName = 'MyFancyCacheName_v1';
+
+// Assets to precache
+const precachedAssets = [
+  '/possum1.jpg',
+  '/possum2.jpg',
+  '/possum3.jpg',
+  '/possum4.jpg'
+];
+
+self.addEventListener('install', (event) => {
+  // Precache assets on install
+  event.waitUntil(caches.open(cacheName).then((cache) => {
+    return cache.addAll(precachedAssets);
+  }));
+});
+
+self.addEventListener('fetch', (event) => {
+  // Is this one of our precached assets?
+  const url = new URL(event.request.url);
+  const isPrecachedRequest = precachedAssets.includes(url.pathname);
+
+  if (isPrecachedRequest) {
+    // Grab the precached asset from the cache
+    event.respondWith(caches.open(cacheName).then((cache) => {
+      return cache.match(event.request.url);
+    }));
+  } else {
+    // Go to the network
+    return;
+  }
+});
+```
+
+Above, an array of assets is precached at install time. When the service worker handles fetches, we check if the request URL handled by the `fetch` event is in the array of precached assets. If so, we grab the resource from the cache, and **skip the network**. Other requests pass through to the network, and only the network. To see this strategy in action, check out **this demo** with your console open.
 
 ### Network only
 
+TODO: image
+
+The opposite of "Cache Only" is "Network Only", where a request is passed through a service worker to the network without any interaction with the service worker cache. This is a good strategy for ensuring content freshness (think markup), but the tradeoff is that it will never work when the user is offline.
+
+Ensuring a request passes through to the network just means you **don't call** `event.respondWith` for a matching request. If you want to be explicit, you can slap an `empty return`; in your `fetch` event callback for requests you want to pass through to the network. This is what happens in the "Cache Only" strategy demo for requests that aren't precached.
+
 ### Cache first, falling back to network
+
+TODO: image
+
+This strategy is where things get a little more involved. For matching requests, the process goes like this:
+
+1. The request hits the cache. If the asset is in the cache, serve it from there.
+2. If the request is not in the cache, go to the network.
+3. Once the network request finishes, add it to the cache, then return the response from the network.
+
+Here's an example of this strategy, which you can test out in a [live demo](https://service-worker-cache-then-network.glitch.me/):
+
+```js
+// Establish a cache name
+const cacheName = 'MyFancyCacheName_v1';
+
+self.addEventListener('fetch', (event) => {
+  // Check if this is a request for an image
+  if (event.request.destination === 'image') {
+    event.respondWith(caches.open(cacheName).then((cache) => {
+      // Go to the cache first
+      return cache.match(event.request.url).then((cachedResponse) => {
+        // Return a cached response if we have one
+        if (cachedResponse) {
+          return cachedResponse;
+        }
+
+        // Otherwise, hit the network
+        return fetch(event.request).then((fetchedResponse) => {
+          // Add the network response to the cache for later visits
+          cache.put(event.request, fetchedResponse.clone());
+
+          // Return the network response
+          return fetchedResponse;
+        });
+      });
+    }));
+  } else {
+    return;
+  }
+});
+```
+
+Though this example covers just images, this is **a great strategy to apply to all static assets** (such as CSS, JavaScript, images, and fonts), **especially hash-versioned ones**. It offers **a speed boost for immutable assets** by side-stepping any content freshness checks with the server the HTTP cache may kick off. More importantly, any cached assets will be available offline.
 
 ### Network first, falling back to cache
 
+TODO: image
+
+If you were to flip "Cache first, network second" on its head, you end up with the "Network first, cache second" strategy, which is what it sounds like:
+
+1. You go to the network first for a request, and place the response in the cache.
+2. If you're offline at a later point, you fall back to the latest version of that response in the cache.
+
+This strategy is **great for HTML or API requests** when, while online, you want the most recent version of a resource, yet want to give offline access to the most recent available version. Here's what that might look like when applied to requests for HTML:
+
+```js
+// Establish a cache name
+const cacheName = 'MyFancyCacheName_v1';
+
+self.addEventListener('fetch', (event) => {
+  // Check if this is a navigation request
+  if (event.request.mode === 'navigate') {
+    // Open the cache
+    event.respondWith(caches.open(cacheName).then((cache) => {
+      // Go to the network first
+      return fetch(event.request.url).then((fetchedResponse) => {
+        cache.put(event.request, fetchedResponse.clone());
+
+        return fetchedResponse;
+      }).catch(() => {
+        // If the network is unavailable, get
+        return cache.match(event.request.url);
+      });
+    }));
+  } else {
+    return;
+  }
+});
+```
+
+You can try this out in [a demo](https://service-worker-network-then-cache.glitch.me/). First, go to the page. You may need to reload before the HTML response is placed in the cache. Then in your developer tools, simulate an offline connection, and reload again. The last available version will be served instantly from the cache.
+
+In situations where offline capability is important, but you need to balance that capability with access to the most recent version of a bit of markup or API data, "Network first, cache second" is a solid strategy that achieves that goal.
+
 ### Stale-while-revalidate
+
+TODO: image
+
+Of the strategies we've covered so far, "Stale-while-revalidate" is the most complex. It's similar to the last two strategies in some ways, but the procedure prioritizes speed of access for a resource, while also keeping it up to date in the background. This strategy goes something like:
+
+1. On the first request for an asset, fetch it from the network, place it in the cache, and return the network response.
+2. On subsequent requests, serve the asset from the cache first, then "in the background," re-request it from the network and update the asset's cache entry.
+3. For requests after that, you'll receive the last version fetched from the network that was placed in the cache in the prior step.
+
+This is an excellent strategy for things that are **sort of important to keep up to date, but are not crucial**. Think of stuff like `avatars` for a social media site. They get updated when users get around to doing so, but the latest version isn't strictly necessary on every request.
+
+```js
+// Establish a cache name
+const cacheName = 'MyFancyCacheName_v1';
+
+self.addEventListener('fetch', (event) => {
+  if (event.request.destination === 'image') {
+    event.respondWith(caches.open(cacheName).then((cache) => {
+      return cache.match(event.request).then((cachedResponse) => {
+        const fetchedResponse = fetch(event.request).then((networkResponse) => {
+          cache.put(event.request, networkResponse.clone());
+
+          return networkResponse;
+        });
+
+        return cachedResponse || fetchedResponse;
+      });
+    }));
+  } else {
+    return;
+  }
+});
+```
+
+You can see this in action in yet another [live demo](https://service-worker-stale-while-revalidate.glitch.me/), particularly if you pay attention to the network tab in your browser's developer tools, and its CacheStorage viewer (if your browser's developer tools has such a tool).
